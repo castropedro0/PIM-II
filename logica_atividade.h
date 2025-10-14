@@ -1,25 +1,48 @@
 #ifndef LOGICA_ATIVIDADES_H
 #define LOGICA_ATIVIDADES_H
 
-#include "logica_pessoa.h"
-#define MAX_ATIVIDADES 100
+#include "logica_pessoas.h"
 
-// Estrutura de Atividade/Aula (Sem Alteração)
-typedef struct
-{
-    int id;
-    char titulo[100];
-    char descricao[256];
+#define MAX_ATIVIDADES 100
+#define MAX_TURMAS 10
+#define MAX_NOTAS 500
+#define NOME_ARQUIVO "dados_sistema.dat"
+
+// Estruturas
+typedef struct {
+    char aluno_cpf[15];
+    char atividade_titulo[100];
+    float valor;
+} Nota;
+
+typedef struct {
+    char nome[50];
     char professor_cpf[15];
+    int total_alunos;
+} Turma;
+
+typedef struct {
+    char titulo[100];
+    char descricao[250];
+    char professor_cpf[15];
+    char data_entrega[11];
 } Atividade;
 
-// Protótipos das Funções para Atividades
-void inserir_atividade(Atividade *atividades, int *total, const char *professor_cpf);
-void listar_atividades(Atividade *atividades, int total);
-void consultar_atividades_aluno(Atividade *atividades, int total);
+// --- ProtÃ³tipos das FunÃ§Ãµes de Notas (ADM/Professor/Aluno) ---
+void consultar_notas(Nota *notas, int total_notas, Pessoa *usuario_logado);
+void inserir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado); // LanÃ§ar/Criar
+void editar_nota(Nota *notas, int total_notas, Pessoa *usuario_logado);    // Alterar/Modificar
+void excluir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado);
 
-// Persistência Única (Funções que salvam TODOS os dados do sistema)
-void salvar_dados_sistema(Pessoa *pessoas, int total_pessoas, Atividade *atividades, int total_atividades);
-void carregar_dados_sistema(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades);
+// --- ProtÃ³tipos de Turmas e Atividades ---
+void inserir_atividade(Atividade *atividades, int *total, char *professor_cpf);
+void consultar_atividades_aluno(Atividade *atividades, int total);
+void inserir_turma(Turma *turmas, int *total_turmas);
+void consultar_turma(Turma *turmas, int total_turmas, Pessoa *usuario_logado);
+void gerar_relatorio();
+
+// --- ProtÃ³tipos de PersistÃªncia ---
+void salvar_dados_sistema(Pessoa *pessoas, int total_pessoas, Atividade *atividades, int total_atividades, Turma *turmas, int total_turmas, Nota *notas, int total_notas);
+void carregar_dados_sistema(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas);
 
 #endif // LOGICA_ATIVIDADES_H

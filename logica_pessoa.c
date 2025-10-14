@@ -3,8 +3,8 @@
 #include <string.h>
 #include "logica_pessoa.h"
 
-// FunÁ„o auxiliar para buscar uma pessoa e retornar o Ìndice
-// Retorna o Ìndice (0 a total-1) ou -1 se n„o encontrar
+// Fun√ß√£o auxiliar para buscar uma pessoa e retornar o √≠ndice
+// Retorna o √≠ndice (0 a total-1) ou -1 se n√£o encontrar
 int buscar_pessoa(Pessoa *pessoas, int total, char *cpf_busca) {
     for (int i = 0; i < total; i++) {
         if (strcmp(pessoas[i].cpf, cpf_busca) == 0) {
@@ -14,7 +14,7 @@ int buscar_pessoa(Pessoa *pessoas, int total, char *cpf_busca) {
     return -1;
 }
 
-// FunÁ„o de InserÁ„o (melhorada para incluir o Perfil)
+// Fun√ß√£o de Inser√ß√£o (melhorada para incluir o Perfil)
 void inserir(Pessoa *pessoas, int *total) {
     if (*total >= MAX) {
         printf("\nERRO: Limite de cadastro atingido.\n");
@@ -28,7 +28,7 @@ void inserir(Pessoa *pessoas, int *total) {
     printf("CPF: ");
     scanf(" %[^\n]", pessoas[i].cpf);
 
-    // VerificaÁ„o de CPF duplicado
+    // Verifica√ß√£o de CPF duplicado
     if (buscar_pessoa(pessoas, *total, pessoas[i].cpf) != -1) {
         printf("ERRO: CPF ja cadastrado.\n");
         return;
@@ -48,10 +48,10 @@ void inserir(Pessoa *pessoas, int *total) {
         printf("1. %s\n", ROLE_ADM);
         printf("2. %s\n", ROLE_PROFESSOR);
         printf("3. %s\n", ROLE_ALUNO);
-        printf("OpÁ„o: ");
+        printf("Op√ß√£o: ");
         scanf("%d", &perfil_opcao);
 
-        // Estrutura de seleÁ„o (switch - Requisito ObrigatÛrio)
+        // Estrutura de sele√ß√£o (switch - Requisito Obrigat√≥rio)
         switch (perfil_opcao) {
             case 1: strcpy(pessoas[i].role, ROLE_ADM); break;
             case 2: strcpy(pessoas[i].role, ROLE_PROFESSOR); break;
@@ -64,7 +64,7 @@ void inserir(Pessoa *pessoas, int *total) {
     printf("Pessoa '%s' cadastrada com sucesso como %s!\n", pessoas[i].nome, pessoas[i].role);
 }
 
-// FunÁ„o de Listagem
+// Fun√ß√£o de Listagem
 void listar(Pessoa *pessoas, int total) {
     printf("\n--- Lista de Pessoas ---\n");
     for (int i = 0; i < total; i++) {
@@ -73,7 +73,7 @@ void listar(Pessoa *pessoas, int total) {
         printf("CPF: %s\n", pessoas[i].cpf);
         printf("Idade: %d\n", pessoas[i].idade);
         printf("Telefone: %s\n", pessoas[i].telefone);
-        printf("EndereÁo: %s\n", pessoas[i].endereco);
+        printf("Endere√ßo: %s\n", pessoas[i].endereco);
         printf("Perfil: %s\n", pessoas[i].role); // Novo campo
     }
     if (total == 0) {
@@ -81,12 +81,12 @@ void listar(Pessoa *pessoas, int total) {
     }
 }
 
-// FunÁ„o de Exclus„o (Requer permiss„o ADM)
+// Fun√ß√£o de Exclus√£o (Requer permiss√£o ADM)
 void excluir_pessoa(Pessoa *pessoas, int *total, int index) {
     if (index >= 0 && index < *total) {
         printf("\nExcluindo: %s (CPF: %s)\n", pessoas[index].nome, pessoas[index].cpf);
 
-        // Desloca os elementos para preencher o espaÁo (Requisito Estrutura de Dados)
+        // Desloca os elementos para preencher o espa√ßo (Requisito Estrutura de Dados)
         for (int i = index; i < *total - 1; i++) {
             pessoas[i] = pessoas[i + 1];
         }
@@ -97,10 +97,10 @@ void excluir_pessoa(Pessoa *pessoas, int *total, int index) {
     }
 }
 
-// FunÁıes de PersistÍncia (Requisitos C: Salvar e Ler em Arquivo)
+// Fun√ß√µes de Persist√™ncia (Requisitos C: Salvar e Ler em Arquivo)
 
 void salvar_dados(Pessoa *pessoas, int total) {
-    FILE *arq = fopen(NOME_ARQUIVO, "wb"); // 'wb' = escrita bin·ria
+    FILE *arq = fopen(NOME_ARQUIVO, "wb"); // 'wb' = escrita bin√°ria
     if (arq == NULL) {
         perror("Erro ao salvar dados");
         return;
@@ -115,18 +115,18 @@ void salvar_dados(Pessoa *pessoas, int total) {
 }
 
 int carregar_dados(Pessoa *pessoas) {
-    FILE *arq = fopen(NOME_ARQUIVO, "rb"); // 'rb' = leitura bin·ria
+    FILE *arq = fopen(NOME_ARQUIVO, "rb"); // 'rb' = leitura bin√°ria
     if (arq == NULL) {
-        return 0; // Arquivo n„o existe ou n„o pode ser aberto
+        return 0; // Arquivo n√£o existe ou n√£o pode ser aberto
     }
 
     int total = 0;
-    fread(&total, sizeof(int), 1, arq); // LÍ o total
+    fread(&total, sizeof(int), 1, arq); // L√™ o total
 
-    // Garante que o total lido n„o exceda o tamanho do array
+    // Garante que o total lido n√£o exceda o tamanho do array
     if (total > MAX) total = MAX;
 
-    fread(pessoas, sizeof(Pessoa), total, arq); // LÍ os dados
+    fread(pessoas, sizeof(Pessoa), total, arq); // L√™ os dados
 
     printf("\nDados de %d pessoas carregados do arquivo '%s'.\n", total, NOME_ARQUIVO);
 
@@ -134,9 +134,9 @@ int carregar_dados(Pessoa *pessoas) {
     return total;
 }
 
-// FunÁıes de Acesso (Login e Menu)
+// Fun√ß√µes de Acesso (Login e Menu)
 
-// Simula o login buscando por CPF e retornando o usu·rio logado
+// Simula o login buscando por CPF e retornando o usu√°rio logado
 int fazer_login(Pessoa *pessoas, int total, Pessoa *usuario_logado) {
     char cpf_busca[15];
     printf("\n--- Login (Busca por CPF) ---\n");
@@ -145,9 +145,9 @@ int fazer_login(Pessoa *pessoas, int total, Pessoa *usuario_logado) {
 
     int index = buscar_pessoa(pessoas, total, cpf_busca);
 
-    // Estrutura de decis„o para verificar se o usu·rio existe
+    // Estrutura de decis√£o para verificar se o usu√°rio existe
     if (index != -1) {
-        // Copia a struct da pessoa encontrada para a vari·vel 'usuario_logado'
+        // Copia a struct da pessoa encontrada para a vari√°vel 'usuario_logado'
         *usuario_logado = pessoas[index];
         printf("\nLogin efetuado com sucesso! Perfil: %s\n", usuario_logado->role);
         return 1; // Sucesso

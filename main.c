@@ -1,69 +1,63 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h> // Para suporte a acentuação
+#include <locale.h>
 #include "logica_pessoas.h"
 #include "logica_atividades.h"
 
-// Definições de Constantes para as Opções do Menu
+// Definições de Opções
 #define OP_SAIR 0
 #define OP_LOGIN 1
 #define OP_NOVO_CADASTRO 2
+#define OP_LOGOUT 10
 
-// Opções ADM
-#define OP_LISTAR_PESSOAS 10
-#define OP_EXCLUIR_PESSOA 11
-#define OP_PROMOVER_USUARIO 12
-#define OP_INSERIR_TURMA 13
-#define OP_EXCLUIR_NOTA 14
+// Funções Auxiliares para Menus
+int menu_adm(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado, char *perfil_logado);
+int menu_professor(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado, char *perfil_logado);
+int menu_aluno(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado, char *perfil_logado);
 
-// Opções Professor/ADM de Notas
-#define OP_INSERIR_ATIVIDADE 20
-#define OP_INSERIR_NOTA 21 // LANÇAR/CRIAR
-#define OP_EDITAR_NOTA 22  // EDITAR/ALTERAR
+// Funções de Subpáginas
+void submenu_gestao_pessoas(Pessoa *pessoas, int *total_pessoas, Pessoa *usuario_logado);
+void submenu_gestao_notas(Pessoa *pessoas, int total_pessoas, Atividade *atividades, int total_atividades, Turma *turmas, int total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado);
 
-// Opções Comuns
-#define OP_CONSULTAR_ATIVIDADES 23 // Aluno
-#define OP_CONSULTAR_NOTA 24       // Todos
-#define OP_GERAR_RELATORIO 30      // ADM e Professor
-#define OP_CONSULTAR_TURMA 31      // Todos
-#define OP_LOGOUT 99
 
 int main() {
-    // ----------------------------------------------------
-    // INICIALIZAÇÃO DA BLIBLIOTECA LOCALE
     setlocale(LC_ALL, "");
-    // ----------------------------------------------------
 
     Pessoa pessoas[MAX_PESSOAS];
     int total_pessoas = 0;
-
     Atividade atividades[MAX_ATIVIDADES];
     int total_atividades = 0;
-
     Turma turmas[MAX_TURMAS];
     int total_turmas = 0;
-
     Nota notas[MAX_NOTAS];
     int total_notas = 0;
+    int codigo_acao = 1;
+    int opcao;
 
     carregar_dados_sistema(pessoas, &total_pessoas, atividades, &total_atividades, turmas, &total_turmas, notas, &total_notas);
 
+    // ADM Master "Gui123"
+    if (total_pessoas == 0) {
+        Pessoa adm_master = {"ADM Master (Inicial)", "Gui123", "Gui123", 99, "999999999", "Sistema", ROLE_ADM};
+        pessoas[0] = adm_master;
+        total_pessoas = 1;
+        printf("\n[ATENÇÃO] ADM Master 'Gui123' (senha: Gui123) criado para inicialização. Por favor, crie outro ADM após o login.\n");
+    }
+
     Pessoa usuario_logado = {"", "", "", 0, "", "", ""};
     char perfil_logado[15] = "";
-    int opcao;
 
     printf("\n\n******************************************\n");
     printf("         SISTEMA ACADÊMICO (PIM II)\n");
     printf("******************************************\n");
 
     do {
-        printf("\n");
         if (strcmp(perfil_logado, "") == 0) { // Deslogado
-            printf("--- Menu Principal (Deslogado) ---\n");
-            printf("%d. Fazer Login\n", OP_LOGIN);
-            printf("%d. Novo Cadastro (APENAS ALUNO)\n", OP_NOVO_CADASTRO);
-            printf("%d. Sair e Salvar\n", OP_SAIR);
+            printf("\n--- Menu Principal ---\n");
+            printf("1. Fazer Login\n");
+            printf("2. Novo Cadastro \n");
+            printf("0. Sair e Salvar\n");
             printf("Escolha uma opção: ");
 
             if (scanf("%d", &opcao) != 1) {
@@ -74,129 +68,196 @@ int main() {
             switch (opcao) {
                 case OP_LOGIN:
                     usuario_logado = fazer_login(pessoas, total_pessoas, perfil_logado);
+                    codigo_acao = 1;
                     break;
                 case OP_NOVO_CADASTRO:
-                    inserir(pessoas, &total_pessoas);
+                    inserir(pessoas, &total_pessoas, 0); // PERMISSÃO 0: APENAS ALUNO (RESOLVIDO)
+                    codigo_acao = 1;
                     break;
                 case OP_SAIR:
+                    codigo_acao = 0;
                     break;
                 default:
                     printf("Opção inválida. Tente novamente.\n");
+                    codigo_acao = 1;
             }
 
         } else { // Logado
-            printf("\n--- Menu de Acesso (%s) - Bem-vindo(a), %s ---\n", perfil_logado, usuario_logado.nome);
 
-            // Menu ADM
             if (strcmp(perfil_logado, ROLE_ADM) == 0) {
-                printf("--- Opções ADM ---\n");
-                printf("%d. Listar Pessoas\n", OP_LISTAR_PESSOAS);
-                printf("%d. Inserir Nova Turma\n", OP_INSERIR_TURMA);
-                printf("%d. Excluir Pessoa\n", OP_EXCLUIR_PESSOA);
-                printf("%d. Promover/Alterar Perfil de Usuário\n", OP_PROMOVER_USUARIO);
-                printf("%d. Gerar Relatório\n", OP_GERAR_RELATORIO);
-                printf("%d. Consultar Notas\n", OP_CONSULTAR_NOTA);
-                printf("%d. LANÇAR Nota \n", OP_INSERIR_NOTA);
-                printf("%d. EDITAR Nota \n", OP_EDITAR_NOTA);
-                printf("%d. Excluir Nota \n", OP_EXCLUIR_NOTA);
+                codigo_acao = menu_adm(pessoas, &total_pessoas, atividades, &total_atividades, turmas, &total_turmas, notas, &total_notas, &usuario_logado, perfil_logado);
+            } else if (strcmp(perfil_logado, ROLE_PROFESSOR) == 0) {
+                codigo_acao = menu_professor(pessoas, &total_pessoas, atividades, &total_atividades, turmas, &total_turmas, notas, &total_notas, &usuario_logado, perfil_logado);
+            } else if (strcmp(perfil_logado, ROLE_ALUNO) == 0) {
+                codigo_acao = menu_aluno(pessoas, &total_pessoas, atividades, &total_atividades, turmas, &total_turmas, notas, &total_notas, &usuario_logado, perfil_logado);
             }
 
-            // Menu PROFESSOR
-            if (strcmp(perfil_logado, ROLE_PROFESSOR) == 0) {
-                printf("--- Opções PROFESSOR ---\n");
-                printf("%d. Inserir Nova Atividade\n", OP_INSERIR_ATIVIDADE);
-                printf("%d. LANÇAR Nota \n", OP_INSERIR_NOTA);
-                printf("%d. EDITAR Nota \n", OP_EDITAR_NOTA);
-                printf("%d. Gerar Relatório\n", OP_GERAR_RELATORIO);
-            }
-
-            // Menu ALUNO
-            if (strcmp(perfil_logado, ROLE_ALUNO) == 0) {
-                printf("--- Opções ALUNO ---\n");
-                printf("%d. Consultar Aulas e Atividades\n", OP_CONSULTAR_ATIVIDADES);
-                printf("%d. Consultar Notas\n", OP_CONSULTAR_NOTA);
-            }
-
-            // Opções Comuns
-            printf("--- Opções Comuns ---\n");
-            printf("%d. Consultar Turma\n", OP_CONSULTAR_TURMA);
-
-            printf("%d. Fazer Logout\n", OP_LOGOUT);
-            printf("%d. Sair e Salvar\n", OP_SAIR);
-            printf("Escolha uma opção: ");
-
-            if (scanf("%d", &opcao) != 1) {
-                while (getchar() != '\n');
-                opcao = -1;
-            }
-
-            // Lógica do SWITCH/CASE (Permissões)
-            switch (opcao) {
-                // ... (ADM Pessoas) ...
-                case OP_LISTAR_PESSOAS:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0) { listar(pessoas, total_pessoas); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-                case OP_EXCLUIR_PESSOA:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0) { excluir_pessoa(pessoas, &total_pessoas); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-                case OP_PROMOVER_USUARIO:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0) { promover_usuario(pessoas, total_pessoas); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-
-                // Funções de Notas (Separadas)
-                case OP_INSERIR_NOTA:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0 || strcmp(perfil_logado, ROLE_PROFESSOR) == 0) {
-                        inserir_nota(notas, &total_notas, &usuario_logado);
-                    } else {
-                        printf("!!! ACESSO NEGADO. Apenas ADM ou Professor. !!!\n");
-                    }
-                    break;
-                case OP_EDITAR_NOTA:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0 || strcmp(perfil_logado, ROLE_PROFESSOR) == 0) {
-                        editar_nota(notas, total_notas, &usuario_logado);
-                    } else {
-                        printf("!!! ACESSO NEGADO. Apenas ADM ou Professor. !!!\n");
-                    }
-                    break;
-                case OP_EXCLUIR_NOTA:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0) { excluir_nota(notas, &total_notas, &usuario_logado); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-
-                // Funções de Turmas/Atividades
-                case OP_INSERIR_TURMA:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0) { inserir_turma(turmas, &total_turmas); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-                case OP_INSERIR_ATIVIDADE:
-                    if (strcmp(perfil_logado, ROLE_PROFESSOR) == 0) { inserir_atividade(atividades, &total_atividades, usuario_logado.cpf); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-                case OP_CONSULTAR_ATIVIDADES:
-                    if (strcmp(perfil_logado, ROLE_ALUNO) == 0) { consultar_atividades_aluno(atividades, total_atividades); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-                case OP_GERAR_RELATORIO:
-                    if (strcmp(perfil_logado, ROLE_ADM) == 0 || strcmp(perfil_logado, ROLE_PROFESSOR) == 0) { gerar_relatorio(); } else { printf("!!! ACESSO NEGADO. !!!\n"); }
-                    break;
-
-                // Funções Comuns
-                case OP_CONSULTAR_NOTA:
-                    consultar_notas(notas, total_notas, &usuario_logado);
-                    break;
-                case OP_CONSULTAR_TURMA:
-                    consultar_turma(turmas, total_turmas, &usuario_logado);
-                    break;
-
-                case OP_LOGOUT:
-                    strcpy(perfil_logado, "");
-                    break;
-                case OP_SAIR:
-                    break;
-                default:
-                    printf("Opção inválida. Tente novamente.\n");
+            if (codigo_acao == OP_LOGOUT) {
+                strcpy(perfil_logado, "");
+                usuario_logado = (Pessoa){"", "", "", 0, "", "", ""};
+                codigo_acao = 1; // Volta ao menu deslogado
+            } else if (codigo_acao == OP_SAIR) {
+                // Sai do loop principal
+            } else {
+                codigo_acao = 1; // Continua logado
             }
         }
-    } while (opcao != OP_SAIR);
+    } while (codigo_acao != OP_SAIR);
 
     salvar_dados_sistema(pessoas, total_pessoas, atividades, total_atividades, turmas, total_turmas, notas, total_notas);
     printf("\nDados salvos. Sistema encerrado. Tchau!\n");
 
     return 0;
+}
+
+// ----------------------------------------------------
+// IMPLEMENTAÇÃO DOS SUBMENUS
+// ----------------------------------------------------
+
+void submenu_gestao_pessoas(Pessoa *pessoas, int *total_pessoas, Pessoa *usuario_logado) {
+    int opcao;
+    do {
+        printf("\n--- Submenu: Gestão de Pessoas (ADM) ---\n");
+        printf("1. Listar Todas as Pessoas\n");
+        printf("2. Excluir Pessoa\n");
+        printf("3. Promover/Alterar Perfil de Usuário\n");
+        printf("4. Inserir Novo Usuário\n"); // MOVIMENTADO
+        printf("0. Voltar ao Menu ADM\n");
+        printf("Escolha uma opção: ");
+
+        if (scanf("%d", &opcao) != 1) { while (getchar() != '\n'); opcao = -1; }
+
+        switch (opcao) {
+            case 1: listar(pessoas, *total_pessoas); break;
+            case 2: excluir_pessoa(pessoas, total_pessoas); break;
+            case 3: promover_usuario(pessoas, *total_pessoas); break;
+            case 4: inserir(pessoas, total_pessoas, 1); break;
+            case 0: break;
+            default: printf("Opção inválida. Tente novamente.\n");
+        }
+    } while (opcao != 0);
+}
+
+void submenu_gestao_notas(Pessoa *pessoas, int total_pessoas, Atividade *atividades, int total_atividades, Turma *turmas, int total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado) {
+    int opcao;
+    char *role = usuario_logado->role;
+    int is_adm_prof = (strcmp(role, ROLE_ADM) == 0 || strcmp(role, ROLE_PROFESSOR) == 0);
+    int is_adm = (strcmp(role, ROLE_ADM) == 0);
+
+    do {
+        printf("\n--- Submenu: Gestão de Notas (%s) ---\n", role);
+
+        if (is_adm_prof) {
+            printf("2. Lançar Nota \n");
+            printf("3. Editar Nota \n");
+            if (is_adm) {
+                printf("4. Excluir Nota \n");
+            }
+        }
+
+        printf("0. Voltar ao Menu Principal\n");
+        printf("Escolha uma opção: ");
+
+        if (scanf("%d", &opcao) != 1) { while (getchar() != '\n'); opcao = -1; }
+
+        if (opcao == 1) {
+            consultar_notas(notas, *total_notas, usuario_logado);
+        } else if (opcao == 2 && is_adm_prof) {
+            inserir_nota(notas, total_notas, usuario_logado);
+        } else if (opcao == 3 && is_adm_prof) {
+            editar_nota(notas, *total_notas, usuario_logado);
+        } else if (opcao == 4 && is_adm) {
+            excluir_nota(notas, total_notas, usuario_logado);
+        } else if (opcao == 0) {
+            break;
+        } else {
+            printf("Opção inválida ou acesso negado. Tente novamente.\n");
+        }
+    } while (opcao != 0);
+}
+
+
+// ----------------------------------------------------
+// IMPLEMENTAÇÃO DOS MENUS PRINCIPAIS POR PERFIL
+// ----------------------------------------------------
+
+int menu_adm(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado, char *perfil_logado) {
+    int opcao;
+    printf("\n--- Menu ADM - Bem-vindo(a), %s ---\n", usuario_logado->nome);
+
+    while (1) {
+        printf("1. Gerenciar Pessoas \n");
+        printf("2. Gerenciar Notas \n");
+        printf("3. Inserir Nova Turma\n");
+        printf("4. Consultar Turma\n");
+        printf("5. Gerar Relatório\n");
+        printf("10. Fazer Logout\n");
+        printf("0. Sair e Salvar\n");
+        printf("Escolha uma opção: ");
+
+        if (scanf("%d", &opcao) != 1) { while (getchar() != '\n'); opcao = -1; }
+
+        switch (opcao) {
+            case 1: submenu_gestao_pessoas(pessoas, total_pessoas, usuario_logado); break;
+            case 2: submenu_gestao_notas(pessoas, *total_pessoas, atividades, *total_atividades, turmas, *total_turmas, notas, total_notas, usuario_logado); break;
+            case 3: inserir_turma(turmas, total_turmas); break;
+            case 4: consultar_turma(turmas, *total_turmas, usuario_logado); break;
+            case 5: gerar_relatorio(); break;
+            case OP_LOGOUT: return OP_LOGOUT;
+            case OP_SAIR: return OP_SAIR;
+            default: printf("Opção inválida. Tente novamente.\n");
+        }
+    }
+}
+
+int menu_professor(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado, char *perfil_logado) {
+    int opcao;
+    printf("\n--- Menu PROFESSOR - Bem-vindo(a), %s ---\n", usuario_logado->nome);
+
+    while (1) {
+        printf("1. Gerenciar Notas \n");
+        printf("2. Inserir Nova Atividade\n");
+        printf("3. Consultar Turma\n");
+        printf("4. Gerar Relatório\n");
+        printf("10. Fazer Logout\n");
+        printf("0. Sair e Salvar\n");
+        printf("Escolha uma opção: ");
+
+        if (scanf("%d", &opcao) != 1) { while (getchar() != '\n'); opcao = -1; }
+
+        switch (opcao) {
+            case 1: submenu_gestao_notas(pessoas, *total_pessoas, atividades, *total_atividades, turmas, *total_turmas, notas, total_notas, usuario_logado); break;
+            case 2: inserir_atividade(atividades, total_atividades, usuario_logado->cpf); break;
+            case 3: consultar_turma(turmas, *total_turmas, usuario_logado); break;
+            case 4: gerar_relatorio(); break;
+            case OP_LOGOUT: return OP_LOGOUT;
+            case OP_SAIR: return OP_SAIR;
+            default: printf("Opção inválida. Tente novamente.\n");
+        }
+    }
+}
+
+int menu_aluno(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas, Pessoa *usuario_logado, char *perfil_logado) {
+    int opcao;
+    printf("\n--- Menu ALUNO - Bem-vindo(a), %s ---\n", usuario_logado->nome);
+
+    while (1) {
+        printf("1. Consultar Notas\n");
+        printf("2. Consultar Aulas e Atividades\n");
+        printf("3. Consultar Turma\n");
+        printf("10. Fazer Logout\n");
+        printf("0. Sair e Salvar\n");
+        printf("Escolha uma opção: ");
+
+        if (scanf("%d", &opcao) != 1) { while (getchar() != '\n'); opcao = -1; }
+
+        switch (opcao) {
+            case 1: consultar_notas(notas, *total_notas, usuario_logado); break;
+            case 2: consultar_atividades_aluno(atividades, *total_atividades); break;
+            case 3: consultar_turma(turmas, *total_turmas, usuario_logado); break;
+            case OP_LOGOUT: return OP_LOGOUT;
+            case OP_SAIR: return OP_SAIR;
+            default: printf("Opção inválida. Tente novamente.\n");
+        }
+    }
 }

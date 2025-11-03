@@ -2,16 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <locale.h> // Para suporte a acentuação
+#include <locale.h>
 #include "logica_atividades.h"
 #include "logica_pessoas.h"
 
-// Inicialização da biblioteca locale
 void __attribute__((constructor)) init_locale_atividades() {
     setlocale(LC_ALL, "");
 }
 
-// Auxiliar: Busca uma nota pelo CPF do aluno e título da atividade
 int buscar_nota(Nota *notas, int total, char *aluno_cpf, char *atividade_titulo) {
     for (int i = 0; i < total; i++) {
         if (strcmp(notas[i].aluno_cpf, aluno_cpf) == 0 && strcmp(notas[i].atividade_titulo, atividade_titulo) == 0) {
@@ -23,7 +21,6 @@ int buscar_nota(Nota *notas, int total, char *aluno_cpf, char *atividade_titulo)
 
 // --- FUNÇÕES DE NOTAS (LANÇAR E EDITAR SEPARADAS) ---
 
-// NOVO: Permissão: ADM e Professor - Lançar/Criar nota
 void inserir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado) {
 
     if (strcmp(usuario_logado->role, ROLE_ALUNO) == 0) {
@@ -37,7 +34,7 @@ void inserir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado) {
     }
 
     Nota nova_nota;
-    printf("\n--- Lançar Nova Nota (ADM/PROFESSOR) ---\n");
+    printf("\n--- Lançar Nova Nota ---\n");
 
     printf("CPF do Aluno que receberá a nota: ");
     scanf("%s", nova_nota.aluno_cpf);
@@ -62,7 +59,6 @@ void inserir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado) {
     printf("\nNota %.2f lançada com sucesso para o aluno %s.\n", nova_nota.valor, nova_nota.aluno_cpf);
 }
 
-// AJUSTADO: Permissão: ADM e Professor - Alterar/Modificar nota
 void editar_nota(Nota *notas, int total_notas, Pessoa *usuario_logado) {
 
     if (strcmp(usuario_logado->role, ROLE_ALUNO) == 0) {
@@ -74,7 +70,7 @@ void editar_nota(Nota *notas, int total_notas, Pessoa *usuario_logado) {
     char atividade_titulo_busca[100];
     float nova_nota;
 
-    printf("\n--- Editar/Alterar Nota Existente (ADM/PROFESSOR) ---\n");
+    printf("\n--- Editar/Alterar Nota Existente ---\n");
     printf("CPF do Aluno: ");
     scanf("%s", aluno_cpf_busca);
     printf("Título da Atividade: ");
@@ -100,7 +96,6 @@ void editar_nota(Nota *notas, int total_notas, Pessoa *usuario_logado) {
     }
 }
 
-// Permissão: Todos
 void consultar_notas(Nota *notas, int total_notas, Pessoa *usuario_logado) {
     printf("\n--- Consulta de Notas ---\n");
 
@@ -128,7 +123,6 @@ void consultar_notas(Nota *notas, int total_notas, Pessoa *usuario_logado) {
     printf("----------------------------------------\n");
 }
 
-// Permissão: ADM Exclusivo
 void excluir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado) {
 
     if (strcmp(usuario_logado->role, ROLE_ADM) != 0) {
@@ -140,7 +134,7 @@ void excluir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado) {
     char atividade_titulo_busca[100];
     char confirmacao;
 
-    printf("\n--- Excluir Nota (ADM EXCLUSIVO) ---\n");
+    printf("\n--- Excluir Nota  ---\n");
     printf("CPF do Aluno: "); scanf("%s", aluno_cpf_busca);
     printf("Título da Atividade: "); scanf(" %[^\n]", atividade_titulo_busca);
 
@@ -171,7 +165,7 @@ void inserir_atividade(Atividade *atividades, int *total, char *professor_cpf) {
 
     Atividade nova_atividade;
 
-    printf("\n--- Inserir Nova Atividade (Professor) ---\n");
+    printf("\n--- Inserir Nova Atividade  ---\n");
     printf("Título: "); scanf(" %[^\n]", nova_atividade.titulo);
     printf("Descrição: "); scanf(" %[^\n]", nova_atividade.descricao);
     printf("Data de Entrega (DD/MM/AAAA): "); scanf(" %s", nova_atividade.data_entrega);
@@ -186,10 +180,11 @@ void inserir_atividade(Atividade *atividades, int *total, char *professor_cpf) {
 void consultar_atividades_aluno(Atividade *atividades, int total) {
     if (total == 0) { printf("\nNenhuma atividade cadastrada no sistema.\n"); return; }
 
-    printf("\n--- Consulta de Aulas e Atividades (Aluno) ---\n");
+    printf("\n--- Consulta de Aulas e Atividades  ---\n");
     for (int i = 0; i < total; i++) {
         printf("----------------------------------------\n");
         printf("Atividade: %s\n", atividades[i].titulo);
+        printf("Professor: %s\n", atividades[i].professor_cpf);
         printf("Entrega: %s\n", atividades[i].data_entrega);
     }
     printf("----------------------------------------\n");
@@ -201,10 +196,10 @@ void inserir_turma(Turma *turmas, int *total_turmas) {
     Turma nova_turma;
     char cpf_professor_temp[15];
 
-    printf("\n--- Inserir Nova Turma (ADM) ---\n");
+    printf("\n--- Inserir Nova Turma  ---\n");
     printf("Nome/Código da Turma: "); scanf(" %[^\n]", nova_turma.nome);
 
-    printf("CPF do Professor Responsável (Pendente se vazio): "); scanf(" %s", cpf_professor_temp);
+    printf("Nome do Professor Responsável (Pendente se vazio): "); scanf(" %s", cpf_professor_temp);
 
     if (strcmp(cpf_professor_temp, "PENDENTE") != 0 && strlen(cpf_professor_temp) > 0) {
         strcpy(nova_turma.professor_cpf, cpf_professor_temp);
@@ -226,14 +221,14 @@ void consultar_turma(Turma *turmas, int total_turmas, Pessoa *usuario_logado) {
 
     if (total_turmas == 0) { printf("Nenhuma turma foi cadastrada.\n"); return; }
 
-    if (strcmp(usuario_logado->role, ROLE_ADM) == 0) {
-        printf("Lista de Turmas (ADM):\n");
+    if (strcmp(usuario_logado->role, ROLE_ADM) == 0 || strcmp(usuario_logado->role, ROLE_PROFESSOR) == 0) {
+        printf("Lista de Turmas (ADM/Professor):\n");
         for (int i = 0; i < total_turmas; i++) {
             printf("[%d] Turma: %s | Prof.: %s | Alunos: %d\n",
                 i + 1, turmas[i].nome, turmas[i].professor_cpf, turmas[i].total_alunos);
         }
     } else {
-        Turma *minha_turma = &turmas[0]; // Simula a busca pela turma do usuário
+        Turma *minha_turma = &turmas[0];
         printf("Sua Turma de Interesse: %s\n", minha_turma->nome);
         printf("- Professor Responsável: %s\n", (strcmp(minha_turma->professor_cpf, "PENDENTE") == 0) ? "A definir" : minha_turma->professor_cpf);
     }
@@ -248,48 +243,114 @@ void gerar_relatorio() {
 }
 
 
-// --- FUNÇÕES DE PERSISTÊNCIA ---
+// --- FUNÇÕES DE PERSISTÊNCIA (FORMATO TEXTO) ---
 
 void salvar_dados_sistema(Pessoa *pessoas, int total_pessoas, Atividade *atividades, int total_atividades, Turma *turmas, int total_turmas, Nota *notas, int total_notas) {
-    FILE *file = fopen(NOME_ARQUIVO, "wb");
-    if (file == NULL) { printf("\nERRO ao abrir o arquivo para salvar.\n"); return; }
-
-    fwrite(&total_pessoas, sizeof(int), 1, file);
-    fwrite(pessoas, sizeof(Pessoa), total_pessoas, file);
-
-    fwrite(&total_atividades, sizeof(int), 1, file);
-    fwrite(atividades, sizeof(Atividade), total_atividades, file);
-
-    fwrite(&total_turmas, sizeof(int), 1, file);
-    fwrite(turmas, sizeof(Turma), total_turmas, file);
-
-    fwrite(&total_notas, sizeof(int), 1, file);
-    fwrite(notas, sizeof(Nota), total_notas, file);
-
-    fclose(file);
-    printf("\n[PERSISTÊNCIA] Dados salvos com sucesso.\n");
-}
-
-void carregar_dados_sistema(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas) {
-    FILE *file = fopen(NOME_ARQUIVO, "rb");
+    FILE *file = fopen(NOME_ARQUIVO, "w");
     if (file == NULL) {
-        *total_pessoas = 0; *total_atividades = 0; *total_turmas = 0; *total_notas = 0;
-        printf("\n[PERSISTÊNCIA] Arquivo de dados não encontrado. Iniciando sistema vazio.\n");
+        printf("\nERRO ao abrir o arquivo para salvar em texto.\n");
         return;
     }
 
-    fread(total_pessoas, sizeof(int), 1, file);
-    fread(pessoas, sizeof(Pessoa), *total_pessoas, file);
+    // --- 1. Pessoas ---
+    fprintf(file, "PESSOAS %d\n", total_pessoas);
+    for (int i = 0; i < total_pessoas; i++) {
+        // Formato: Nome|CPF|Senha|Idade|Telefone|Endereco|Role
+        fprintf(file, "%s|%s|%s|%d|%s|%s|%s\n",
+                pessoas[i].nome, pessoas[i].cpf, pessoas[i].senha, pessoas[i].idade,
+                pessoas[i].telefone, pessoas[i].endereco, pessoas[i].role);
+    }
 
-    fread(total_atividades, sizeof(int), 1, file);
-    fread(atividades, sizeof(Atividade), *total_atividades, file);
+    // --- 2. Atividades ---
+    fprintf(file, "ATIVIDADES %d\n", total_atividades);
+    for (int i = 0; i < total_atividades; i++) {
+        // Formato: Titulo|Descricao|Professor_CPF|Data_Entrega
+        fprintf(file, "%s|%s|%s|%s\n",
+                atividades[i].titulo, atividades[i].descricao, atividades[i].professor_cpf,
+                atividades[i].data_entrega);
+    }
 
-    fread(total_turmas, sizeof(int), 1, file);
-    fread(turmas, sizeof(Turma), *total_turmas, file);
+    // --- 3. Turmas ---
+    fprintf(file, "TURMAS %d\n", total_turmas);
+    for (int i = 0; i < total_turmas; i++) {
+        // Formato: Nome|Professor_CPF|Total_Alunos
+        fprintf(file, "%s|%s|%d\n",
+                turmas[i].nome, turmas[i].professor_cpf, turmas[i].total_alunos);
+    }
 
-    fread(total_notas, sizeof(int), 1, file);
-    fread(notas, sizeof(Nota), *total_notas, file);
+    // --- 4. Notas ---
+    fprintf(file, "NOTAS %d\n", total_notas);
+    for (int i = 0; i < total_notas; i++) {
+        // Formato: Aluno_CPF|Atividade_Titulo|Valor
+        fprintf(file, "%s|%s|%.2f\n",
+                notas[i].aluno_cpf, notas[i].atividade_titulo, notas[i].valor);
+    }
 
     fclose(file);
-    printf("\n[PERSISTÊNCIA] Dados carregados.\n");
+    printf("\n[PERSISTÊNCIA] Dados salvos em arquivo de texto com sucesso.\n");
+}
+
+void carregar_dados_sistema(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas) {
+    FILE *file = fopen(NOME_ARQUIVO, "r");
+    if (file == NULL) {
+        *total_pessoas = 0; *total_atividades = 0; *total_turmas = 0; *total_notas = 0;
+        printf("\n[PERSISTÊNCIA] Arquivo de dados de texto não encontrado. Iniciando sistema vazio.\n");
+        return;
+    }
+
+    char tipo_dado[20];
+    int i;
+
+    // --- 1. Pessoas ---
+    if (fscanf(file, "%s %d\n", tipo_dado, total_pessoas) == 2 && strcmp(tipo_dado, "PESSOAS") == 0) {
+        for (i = 0; i < *total_pessoas; i++) {
+            if (fscanf(file, "%[^|]|%[^|]|%[^|]|%d|%[^|]|%[^|]|%[^\n]\n",
+                       pessoas[i].nome, pessoas[i].cpf, pessoas[i].senha, &pessoas[i].idade,
+                       pessoas[i].telefone, pessoas[i].endereco, pessoas[i].role) != 7) {
+                printf("\n[ERRO DE LEITURA] Falha ao ler Pessoas na linha %d. Interrompendo.\n", i + 1);
+                *total_pessoas = i;
+                break;
+            }
+        }
+    }
+
+    // --- 2. Atividades ---
+    if (fscanf(file, "%s %d\n", tipo_dado, total_atividades) == 2 && strcmp(tipo_dado, "ATIVIDADES") == 0) {
+        for (i = 0; i < *total_atividades; i++) {
+            if (fscanf(file, "%[^|]|%[^|]|%[^|]|%[^\n]\n",
+                       atividades[i].titulo, atividades[i].descricao, atividades[i].professor_cpf,
+                       atividades[i].data_entrega) != 4) {
+                printf("\n[ERRO DE LEITURA] Falha ao ler Atividades na linha %d. Interrompendo.\n", i + 1);
+                *total_atividades = i;
+                break;
+            }
+        }
+    }
+
+    // --- 3. Turmas ---
+    if (fscanf(file, "%s %d\n", tipo_dado, total_turmas) == 2 && strcmp(tipo_dado, "TURMAS") == 0) {
+        for (i = 0; i < *total_turmas; i++) {
+            if (fscanf(file, "%[^|]|%[^|]|%d\n",
+                       turmas[i].nome, turmas[i].professor_cpf, &turmas[i].total_alunos) != 3) {
+                printf("\n[ERRO DE LEITURA] Falha ao ler Turmas na linha %d. Interrompendo.\n", i + 1);
+                *total_turmas = i;
+                break;
+            }
+        }
+    }
+
+    // --- 4. Notas ---
+    if (fscanf(file, "%s %d\n", tipo_dado, total_notas) == 2 && strcmp(tipo_dado, "NOTAS") == 0) {
+        for (i = 0; i < *total_notas; i++) {
+            if (fscanf(file, "%[^|]|%[^|]|%f\n",
+                       notas[i].aluno_cpf, notas[i].atividade_titulo, &notas[i].valor) != 3) {
+                printf("\n[ERRO DE LEITURA] Falha ao ler Notas na linha %d. Interrompendo.\n", i + 1);
+                *total_notas = i;
+                break;
+            }
+        }
+    }
+
+    fclose(file);
+    printf("\n Dados carregados do arquivo de texto.\n");
 }

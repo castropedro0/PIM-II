@@ -6,7 +6,7 @@
 #define MAX_ATIVIDADES 100
 #define MAX_TURMAS 10
 #define MAX_NOTAS 500
-#define NOME_ARQUIVO "dados_sistema.dat"
+#define NOME_ARQUIVO "dados_sistema.txt"
 
 // Estruturas
 typedef struct {
@@ -30,8 +30,8 @@ typedef struct {
 
 // --- Protótipos das Funções de Notas (ADM/Professor/Aluno) ---
 void consultar_notas(Nota *notas, int total_notas, Pessoa *usuario_logado);
-void inserir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado); // Lançar/Criar
-void editar_nota(Nota *notas, int total_notas, Pessoa *usuario_logado);    // Alterar/Modificar
+void inserir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado);
+void editar_nota(Nota *notas, int total_notas, Pessoa *usuario_logado);
 void excluir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado);
 
 // --- Protótipos de Turmas e Atividades ---
@@ -41,7 +41,7 @@ void inserir_turma(Turma *turmas, int *total_turmas);
 void consultar_turma(Turma *turmas, int total_turmas, Pessoa *usuario_logado);
 void gerar_relatorio();
 
-// --- Protótipos de Persistência ---
+// --- Protótipos de Persistência (TXT) ---
 void salvar_dados_sistema(Pessoa *pessoas, int total_pessoas, Atividade *atividades, int total_atividades, Turma *turmas, int total_turmas, Nota *notas, int total_notas);
 void carregar_dados_sistema(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, int *total_atividades, Turma *turmas, int *total_turmas, Nota *notas, int *total_notas);
 

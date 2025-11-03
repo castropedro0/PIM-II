@@ -1,15 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h> // Para suporte a acentuação
+#include <locale.h>
+#include <conio.h>   // ADAPTADO: Para _getch() no Windows (senha oculta)
 #include "logica_pessoas.h"
 
-// Inicialização da biblioteca locale (garante acentuação mesmo se não for chamado no main)
+
 void __attribute__((constructor)) init_locale_pessoas() {
     setlocale(LC_ALL, "");
 }
 
-// Funcao auxiliar para buscar uma pessoa
+// ----------------------------------------------------
+// Função para ler a senha ocultando os caracteres com '*' (ADAPTADO PARA WINDOWS)
+void ler_senha_oculta(char *senha, int max_len) {
+    int i = 0;
+    char ch;
+
+    printf("Senha (máximo %d caracteres): ", max_len - 1);
+
+    while (i < max_len - 1 && (ch = _getch()) != '\r' && ch != '\n') {
+        if (ch == 8 || ch == 127) { // Backspace
+            if (i > 0) {
+                i--;
+                printf("\b \b");
+            }
+        } else {
+            senha[i++] = ch;
+            printf("*");
+        }
+    }
+    senha[i] = '\0';
+    printf("\n");
+}
+// ----------------------------------------------------
+
 int buscar_pessoa(Pessoa *pessoas, int total, char *cpf_busca) {
     for (int i = 0; i < total; i++) {
         if (strcmp(pessoas[i].cpf, cpf_busca) == 0) {
@@ -19,8 +43,8 @@ int buscar_pessoa(Pessoa *pessoas, int total, char *cpf_busca) {
     return -1;
 }
 
-// Funcao de Inserir Novo Usuário
-void inserir(Pessoa *pessoas, int *total) {
+// Implementa a restrição do perfil
+void inserir(Pessoa *pessoas, int *total, int permissao_total) {
     if (*total >= MAX_PESSOAS) {
         printf("\n!!! ERRO: LIMITE DE CADASTRO ATINGIDO !!!\n");
         return;
@@ -37,54 +61,50 @@ void inserir(Pessoa *pessoas, int *total) {
         return;
     }
 
-    printf("Senha (max 19 caracteres): "); scanf("%s", nova_pessoa.senha);
+    // Senha oculta
+    ler_senha_oculta(nova_pessoa.senha, sizeof(nova_pessoa.senha));
+
     printf("Idade: "); scanf("%d", &nova_pessoa.idade);
     printf("Telefone: "); scanf(" %[^\n]", nova_pessoa.telefone);
     printf("Endereço: "); scanf(" %[^\n]", nova_pessoa.endereco);
 
-    int escolha_role;
-    int role_valida = 0;
+    // Lógica de Perfil
+    if (permissao_total) {
+        // Opções completas para ADM logado ou primeiro cadastro
+        int escolha_role;
+        int role_valida = 0;
 
-    do {
-        printf("\nEscolha o Perfil (Role):\n");
-        printf("3 - %s (Padrão para Novos Cadastros)\n", ROLE_ALUNO);
-
-        if (*total == 0) {
-            printf("1 - %s (Inicializador do Sistema)\n", ROLE_ADM);
+        do {
+            printf("\nEscolha o Perfil (Role):\n");
+            printf("1 - %s\n", ROLE_ADM);
             printf("2 - %s\n", ROLE_PROFESSOR);
-        }
+            printf("3 - %s\n", ROLE_ALUNO);
 
-        printf("Escolha: ");
-        if (scanf("%d", &escolha_role) != 1) {
-            while (getchar() != '\n');
-            escolha_role = -1;
-        }
+            printf("Escolha: ");
+            if (scanf("%d", &escolha_role) != 1) {
+                while (getchar() != '\n');
+                escolha_role = -1;
+            }
 
-        switch (escolha_role) {
-            case 1:
-                if (*total == 0) {
-                    strcpy(nova_pessoa.role, ROLE_ADM); role_valida = 1;
-                } else { printf("Opção inválida. Use a função de promoção.\n"); }
-                break;
-            case 2:
-                if (*total == 0) {
-                    strcpy(nova_pessoa.role, ROLE_PROFESSOR); role_valida = 1;
-                } else { printf("Opção inválida. Use a função de promoção.\n"); }
-                break;
-            case 3:
-                strcpy(nova_pessoa.role, ROLE_ALUNO); role_valida = 1;
-                break;
-            default:
-                printf("Opção de perfil inválida. Tente novamente.\n");
-        }
-    } while (!role_valida);
+            switch (escolha_role) {
+                case 1: strcpy(nova_pessoa.role, ROLE_ADM); role_valida = 1; break;
+                case 2: strcpy(nova_pessoa.role, ROLE_PROFESSOR); role_valida = 1; break;
+                case 3: strcpy(nova_pessoa.role, ROLE_ALUNO); role_valida = 1; break;
+                default: printf("Opção de perfil inválida. Tente novamente.\n");
+            }
+        } while (!role_valida);
+
+    } else {
+        // Somente ALUNO para cadastro deslogado (Opção 2 do Menu Principal)
+        strcpy(nova_pessoa.role, ROLE_ALUNO);
+        printf("\nPerfil definido como: %s\n", ROLE_ALUNO);
+    }
 
     pessoas[*total] = nova_pessoa;
     (*total)++;
     printf("\nCadastro de %s como %s realizado com sucesso!\n", nova_pessoa.nome, nova_pessoa.role);
 }
 
-// Implementação da função de login
 Pessoa fazer_login(Pessoa *pessoas, int total, char *perfil_logado) {
     char cpf_login[15];
     char senha_login[20];
@@ -94,7 +114,9 @@ Pessoa fazer_login(Pessoa *pessoas, int total, char *perfil_logado) {
 
     printf("\n--- Login ---\n");
     printf("Digite seu CPF: "); scanf("%s", cpf_login);
-    printf("Digite sua Senha: "); scanf("%s", senha_login);
+
+    // Senha oculta
+    ler_senha_oculta(senha_login, sizeof(senha_login));
 
     index = buscar_pessoa(pessoas, total, cpf_login);
 
@@ -115,7 +137,6 @@ Pessoa fazer_login(Pessoa *pessoas, int total, char *perfil_logado) {
     }
 }
 
-// Funcao de listar (ADM)
 void listar(Pessoa *pessoas, int total) {
     printf("\n--- Lista de Usuários (%d cadastrados) ---\n", total);
     for (int i = 0; i < total; i++) {
@@ -127,12 +148,11 @@ void listar(Pessoa *pessoas, int total) {
     printf("----------------------------------------\n");
 }
 
-// Funcao de exclusao (ADM)
 void excluir_pessoa(Pessoa *pessoas, int *total) {
     char cpf_busca[15];
     char confirmacao;
 
-    printf("\n--- Excluir Usuário (ADM) ---\n");
+    printf("\n--- Excluir Usuário  ---\n");
     printf("Digite o CPF do usuário a ser excluído: "); scanf("%s", cpf_busca);
 
     int index = buscar_pessoa(pessoas, *total, cpf_busca);
@@ -155,12 +175,11 @@ void excluir_pessoa(Pessoa *pessoas, int *total) {
     }
 }
 
-// Funcao de promocao (ADM)
 void promover_usuario(Pessoa *pessoas, int total) {
     char cpf_busca[15];
     int novo_perfil_escolha;
 
-    printf("\n--- Promover/Alterar Perfil de Usuário (ADM) ---\n");
+    printf("\n--- Promover/Alterar Perfil de Usuário  ---\n");
     printf("Digite o CPF do usuário a ser promovido: "); scanf("%s", cpf_busca);
 
     int index = buscar_pessoa(pessoas, total, cpf_busca);

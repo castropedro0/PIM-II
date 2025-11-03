@@ -22,10 +22,14 @@ typedef struct {
 
 // --- Protótipos das Funções de Gestão de Pessoas ---
 int buscar_pessoa(Pessoa *pessoas, int total, char *cpf_busca);
-void inserir(Pessoa *pessoas, int *total);
+// NOVO PROTÓTIPO: permissao_total: 1 se ADM pode escolher perfil; 0 se é apenas ALUNO
+void inserir(Pessoa *pessoas, int *total, int permissao_total);
 Pessoa fazer_login(Pessoa *pessoas, int total, char *perfil_logado);
 void listar(Pessoa *pessoas, int total);
 void excluir_pessoa(Pessoa *pessoas, int *total);
 void promover_usuario(Pessoa *pessoas, int total);
+
+// Protótipo da função de leitura de senha oculta (ADAPTADO PARA WINDOWS)
+void ler_senha_oculta(char *senha, int max_len);
 
 #endif // LOGICA_PESSOAS_H

@@ -1,30 +1,32 @@
+// Arquivo: logica_atividades.h
+
 #ifndef LOGICA_ATIVIDADES_H
 #define LOGICA_ATIVIDADES_H
 
-#include "logica_pessoas.h"
+#include "logica_pessoas.h" // Necessário para struct Pessoa e constantes
 
 #define MAX_ATIVIDADES 100
 #define MAX_TURMAS 10
 #define MAX_NOTAS 500
 #define NOME_ARQUIVO "dados_sistema.txt"
 
-// Estruturas
+// Estruturas - CHAVES ATUALIZADAS PARA EMAIL
 typedef struct {
-    char aluno_cpf[15];
+    char aluno_email[TAM_EMAIL];
     char atividade_titulo[100];
     float valor;
 } Nota;
 
 typedef struct {
     char nome[50];
-    char professor_cpf[15];
+    char professor_email[TAM_EMAIL];
     int total_alunos;
 } Turma;
 
 typedef struct {
     char titulo[100];
     char descricao[250];
-    char professor_cpf[15];
+    char professor_email[TAM_EMAIL];
     char data_entrega[11];
 } Atividade;
 
@@ -34,9 +36,9 @@ void inserir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado);
 void editar_nota(Nota *notas, int total_notas, Pessoa *usuario_logado);
 void excluir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado);
 
-// --- Protótipos de Turmas e Atividades ---
-void inserir_atividade(Atividade *atividades, int *total, char *professor_cpf);
-void consultar_atividades_aluno(Atividade *atividades, int total);
+// --- Protótipos de Turmas e Atividades (Implementação completa para evitar erro de Linker) ---
+void inserir_atividade(Atividade *atividades, int *total_atividades, char *professor_email);
+void consultar_atividades_aluno(Atividade *atividades, int total_atividades);
 void inserir_turma(Turma *turmas, int *total_turmas);
 void consultar_turma(Turma *turmas, int total_turmas, Pessoa *usuario_logado);
 void gerar_relatorio();

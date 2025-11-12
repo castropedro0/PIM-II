@@ -1,3 +1,5 @@
+// Arquivo: main.c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,17 +37,20 @@ int main() {
     int codigo_acao = 1;
     int opcao;
 
+    // Carrega os dados salvos anteriormente (se existirem)
     carregar_dados_sistema(pessoas, &total_pessoas, atividades, &total_atividades, turmas, &total_turmas, notas, &total_notas);
 
-    // ADM Master "Gui123"
+    // ADM Master "Gui123" (Login) - CORRIGIDO PARA 4 CAMPOS
     if (total_pessoas == 0) {
-        Pessoa adm_master = {"ADM Master (Inicial)", "Gui123", "Gui123", 99, "999999999", "Sistema", ROLE_ADM};
+        // Campos: nome, email(login), senha, role
+        Pessoa adm_master = {"ADM Master (Inicial)", "Gui123@unip.com", "Gui123", ROLE_ADM};
         pessoas[0] = adm_master;
         total_pessoas = 1;
-        printf("\n[ATENÇÃO] ADM Master 'Gui123' (senha: Gui123) criado para inicialização. Por favor, crie outro ADM após o login.\n");
+        printf("\n[ATENÇÃO] ADM Master 'Gui123@unip.com' (senha: Gui123) criado para inicialização.\n");
     }
 
-    Pessoa usuario_logado = {"", "", "", 0, "", "", ""};
+    // Inicialização da struct Pessoa com 4 campos - CORRIGIDO
+    Pessoa usuario_logado = {"", "", "", ""};
     char perfil_logado[15] = "";
 
     printf("\n\n******************************************\n");
@@ -56,7 +61,7 @@ int main() {
         if (strcmp(perfil_logado, "") == 0) { // Deslogado
             printf("\n--- Menu Principal ---\n");
             printf("1. Fazer Login\n");
-            printf("2. Novo Cadastro \n");
+            printf("2. Novo Cadastro (Apenas Aluno)\n");
             printf("0. Sair e Salvar\n");
             printf("Escolha uma opção: ");
 
@@ -71,7 +76,7 @@ int main() {
                     codigo_acao = 1;
                     break;
                 case OP_NOVO_CADASTRO:
-                    inserir(pessoas, &total_pessoas, 0); // PERMISSÃO 0: APENAS ALUNO (RESOLVIDO)
+                    inserir(pessoas, &total_pessoas, 0); // PERMISSÃO 0: APENAS ALUNO
                     codigo_acao = 1;
                     break;
                 case OP_SAIR:
@@ -94,7 +99,7 @@ int main() {
 
             if (codigo_acao == OP_LOGOUT) {
                 strcpy(perfil_logado, "");
-                usuario_logado = (Pessoa){"", "", "", 0, "", "", ""};
+                usuario_logado = (Pessoa){"", "", "", ""}; // Resetando
                 codigo_acao = 1; // Volta ao menu deslogado
             } else if (codigo_acao == OP_SAIR) {
                 // Sai do loop principal
@@ -121,7 +126,7 @@ void submenu_gestao_pessoas(Pessoa *pessoas, int *total_pessoas, Pessoa *usuario
         printf("1. Listar Todas as Pessoas\n");
         printf("2. Excluir Pessoa\n");
         printf("3. Promover/Alterar Perfil de Usuário\n");
-        printf("4. Inserir Novo Usuário\n"); // MOVIMENTADO
+        printf("4. Inserir Novo Usuário (ADM/Professor/Aluno)\n");
         printf("0. Voltar ao Menu ADM\n");
         printf("Escolha uma opção: ");
 
@@ -131,7 +136,7 @@ void submenu_gestao_pessoas(Pessoa *pessoas, int *total_pessoas, Pessoa *usuario
             case 1: listar(pessoas, *total_pessoas); break;
             case 2: excluir_pessoa(pessoas, total_pessoas); break;
             case 3: promover_usuario(pessoas, *total_pessoas); break;
-            case 4: inserir(pessoas, total_pessoas, 1); break;
+            case 4: inserir(pessoas, total_pessoas, 1); break; // PERMISSÃO 1: ADM pode escolher o perfil
             case 0: break;
             default: printf("Opção inválida. Tente novamente.\n");
         }
@@ -146,6 +151,9 @@ void submenu_gestao_notas(Pessoa *pessoas, int total_pessoas, Atividade *ativida
 
     do {
         printf("\n--- Submenu: Gestão de Notas (%s) ---\n", role);
+
+        // Opção 1: Consultar Notas (disponível para todos)
+        printf("1. Consultar Notas \n");
 
         if (is_adm_prof) {
             printf("2. Lançar Nota \n");
@@ -227,7 +235,7 @@ int menu_professor(Pessoa *pessoas, int *total_pessoas, Atividade *atividades, i
 
         switch (opcao) {
             case 1: submenu_gestao_notas(pessoas, *total_pessoas, atividades, *total_atividades, turmas, *total_turmas, notas, total_notas, usuario_logado); break;
-            case 2: inserir_atividade(atividades, total_atividades, usuario_logado->cpf); break;
+            case 2: inserir_atividade(atividades, total_atividades, usuario_logado->email); break; // Usando email
             case 3: consultar_turma(turmas, *total_turmas, usuario_logado); break;
             case 4: gerar_relatorio(); break;
             case OP_LOGOUT: return OP_LOGOUT;

@@ -1,28 +1,36 @@
+// Arquivo: logica_pessoas.c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
-#include <conio.h>   // ADAPTADO: Para _getch() no Windows (senha oculta)
+#include <conio.h> // Para _getch() no Windows, usado na senha oculta
 #include "logica_pessoas.h"
 
-
+// Garante o idioma em português
 void __attribute__((constructor)) init_locale_pessoas() {
     setlocale(LC_ALL, "");
 }
 
 // ----------------------------------------------------
-// Função para ler a senha ocultando os caracteres com '*' (ADAPTADO PARA WINDOWS)
+// Função para ler a senha ocultando os caracteres com '*' (ADAPTADO PARA WINDOWS/MinGW)
 void ler_senha_oculta(char *senha, int max_len) {
     int i = 0;
     char ch;
 
     printf("Senha (máximo %d caracteres): ", max_len - 1);
 
-    while (i < max_len - 1 && (ch = _getch()) != '\r' && ch != '\n') {
-        if (ch == 8 || ch == 127) { // Backspace
+    // O loop continua até que o buffer esteja cheio ou o usuário pressione Enter (\r)
+    while (i < max_len - 1) {
+        // Usa _getch() para ler o caractere sem ecoar (printar)
+        ch = _getch();
+
+        if (ch == '\r' || ch == '\n') { // Enter pressionado (fim da entrada)
+            break;
+        } else if (ch == 8 || ch == 127) { // Backspace
             if (i > 0) {
                 i--;
-                printf("\b \b");
+                printf("\b \b"); // Move o cursor para trás, apaga o caractere, move o cursor para trás novamente
             }
         } else {
             senha[i++] = ch;
@@ -34,16 +42,17 @@ void ler_senha_oculta(char *senha, int max_len) {
 }
 // ----------------------------------------------------
 
-int buscar_pessoa(Pessoa *pessoas, int total, char *cpf_busca) {
+// Busca por EMAIL (substitui o CPF)
+int buscar_pessoa(Pessoa *pessoas, int total, char *email_busca) {
     for (int i = 0; i < total; i++) {
-        if (strcmp(pessoas[i].cpf, cpf_busca) == 0) {
+        if (strcmp(pessoas[i].email, email_busca) == 0) {
             return i;
         }
     }
     return -1;
 }
 
-// Implementa a restrição do perfil
+// Cadastro de Pessoa (simplificado)
 void inserir(Pessoa *pessoas, int *total, int permissao_total) {
     if (*total >= MAX_PESSOAS) {
         printf("\n!!! ERRO: LIMITE DE CADASTRO ATINGIDO !!!\n");
@@ -51,26 +60,29 @@ void inserir(Pessoa *pessoas, int *total, int permissao_total) {
     }
 
     Pessoa nova_pessoa;
+    char email_temp[TAM_EMAIL];
 
     printf("\n--- Novo Cadastro ---\n");
-    printf("Nome: "); scanf(" %[^\n]", nova_pessoa.nome);
-    printf("CPF: "); scanf("%s", nova_pessoa.cpf);
+    printf("Nome: ");
+    // Limpa o buffer antes de ler string com espaços
+    if (scanf(" %[^\n]", nova_pessoa.nome) != 1) { return; }
 
-    if (buscar_pessoa(pessoas, *total, nova_pessoa.cpf) != -1) {
-        printf("!!! ERRO: CPF já cadastrado. Não é possível continuar. !!!\n");
+    // Usa EMAIL como identificador único
+    printf("E-mail (será seu login): ");
+    if (scanf("%s", email_temp) != 1) { return; }
+
+    if (buscar_pessoa(pessoas, *total, email_temp) != -1) {
+        printf("!!! ERRO: E-mail já cadastrado. Não é possível continuar. !!!\n");
         return;
     }
+    strcpy(nova_pessoa.email, email_temp);
 
     // Senha oculta
     ler_senha_oculta(nova_pessoa.senha, sizeof(nova_pessoa.senha));
 
-    printf("Idade: "); scanf("%d", &nova_pessoa.idade);
-    printf("Telefone: "); scanf(" %[^\n]", nova_pessoa.telefone);
-    printf("Endereço: "); scanf(" %[^\n]", nova_pessoa.endereco);
-
     // Lógica de Perfil
     if (permissao_total) {
-        // Opções completas para ADM logado ou primeiro cadastro
+        // Opções completas para ADM logado
         int escolha_role;
         int role_valida = 0;
 
@@ -95,7 +107,7 @@ void inserir(Pessoa *pessoas, int *total, int permissao_total) {
         } while (!role_valida);
 
     } else {
-        // Somente ALUNO para cadastro deslogado (Opção 2 do Menu Principal)
+        // Somente ALUNO para cadastro deslogado
         strcpy(nova_pessoa.role, ROLE_ALUNO);
         printf("\nPerfil definido como: %s\n", ROLE_ALUNO);
     }
@@ -105,20 +117,22 @@ void inserir(Pessoa *pessoas, int *total, int permissao_total) {
     printf("\nCadastro de %s como %s realizado com sucesso!\n", nova_pessoa.nome, nova_pessoa.role);
 }
 
+// Login por EMAIL (substitui o CPF)
 Pessoa fazer_login(Pessoa *pessoas, int total, char *perfil_logado) {
-    char cpf_login[15];
-    char senha_login[20];
+    char email_login[TAM_EMAIL];
+    char senha_login[TAM_SENHA];
     int index = -1;
 
-    Pessoa usuario_vazio = {"", "", "", 0, "", "", ""};
+    Pessoa usuario_vazio = {"", "", "", ""};
 
     printf("\n--- Login ---\n");
-    printf("Digite seu CPF: "); scanf("%s", cpf_login);
+    printf("Digite seu E-mail: ");
+    if (scanf("%s", email_login) != 1) { return usuario_vazio; }
 
     // Senha oculta
     ler_senha_oculta(senha_login, sizeof(senha_login));
 
-    index = buscar_pessoa(pessoas, total, cpf_login);
+    index = buscar_pessoa(pessoas, total, email_login);
 
     if (index != -1) {
         if (strcmp(pessoas[index].senha, senha_login) == 0) {
@@ -131,7 +145,7 @@ Pessoa fazer_login(Pessoa *pessoas, int total, char *perfil_logado) {
             return usuario_vazio;
         }
     } else {
-        printf("\nERRO: Usuário não encontrado. CPF incorreto ou não cadastrado.\n");
+        printf("\nERRO: Usuário não encontrado. E-mail incorreto ou não cadastrado.\n");
         strcpy(perfil_logado, "");
         return usuario_vazio;
     }
@@ -142,20 +156,21 @@ void listar(Pessoa *pessoas, int total) {
     for (int i = 0; i < total; i++) {
         printf("----------------------------------------\n");
         printf("Nome: %s\n", pessoas[i].nome);
-        printf("CPF: %s\n", pessoas[i].cpf);
+        printf("E-mail (Login): %s\n", pessoas[i].email);
         printf("Perfil: %s\n", pessoas[i].role);
     }
     printf("----------------------------------------\n");
 }
 
 void excluir_pessoa(Pessoa *pessoas, int *total) {
-    char cpf_busca[15];
+    char email_busca[TAM_EMAIL];
     char confirmacao;
 
-    printf("\n--- Excluir Usuário  ---\n");
-    printf("Digite o CPF do usuário a ser excluído: "); scanf("%s", cpf_busca);
+    printf("\n--- Excluir Usuário ---\n");
+    printf("Digite o E-mail do usuário a ser excluído: ");
+    if (scanf("%s", email_busca) != 1) { return; }
 
-    int index = buscar_pessoa(pessoas, *total, cpf_busca);
+    int index = buscar_pessoa(pessoas, *total, email_busca);
 
     if (index != -1) {
         printf("Usuário %s (%s) encontrado. Excluir? (S/N): ", pessoas[index].nome, pessoas[index].role);
@@ -171,18 +186,20 @@ void excluir_pessoa(Pessoa *pessoas, int *total) {
             printf("Operação de exclusão cancelada.\n");
         }
     } else {
-        printf("Usuário com CPF %s não encontrado.\n", cpf_busca);
+        printf("Usuário com E-mail %s não encontrado.\n", email_busca);
     }
 }
 
+// Erro de 'expected declaration or statement at end of input' corrigido
 void promover_usuario(Pessoa *pessoas, int total) {
-    char cpf_busca[15];
+    char email_busca[TAM_EMAIL];
     int novo_perfil_escolha;
 
-    printf("\n--- Promover/Alterar Perfil de Usuário  ---\n");
-    printf("Digite o CPF do usuário a ser promovido: "); scanf("%s", cpf_busca);
+    printf("\n--- Promover/Alterar Perfil de Usuário ---\n");
+    printf("Digite o E-mail do usuário a ser promovido: ");
+    if (scanf("%s", email_busca) != 1) { return; }
 
-    int index = buscar_pessoa(pessoas, total, cpf_busca);
+    int index = buscar_pessoa(pessoas, total, email_busca);
 
     if (index != -1) {
         printf("Usuário encontrado: %s (Atual: %s)\n", pessoas[index].nome, pessoas[index].role);
@@ -190,7 +207,8 @@ void promover_usuario(Pessoa *pessoas, int total) {
         printf("Escolha o novo Perfil:\n1 - %s\n2 - %s\n3 - %s\nEscolha: ", ROLE_ADM, ROLE_PROFESSOR, ROLE_ALUNO);
 
         if (scanf("%d", &novo_perfil_escolha) != 1) {
-            while (getchar() != '\n'); novo_perfil_escolha = -1;
+            while (getchar() != '\n');
+            novo_perfil_escolha = -1;
         }
 
         switch (novo_perfil_escolha) {
@@ -202,6 +220,6 @@ void promover_usuario(Pessoa *pessoas, int total) {
 
         printf("Perfil de %s alterado com sucesso para %s.\n", pessoas[index].nome, pessoas[index].role);
     } else {
-        printf("Usuário com CPF %s não encontrado.\n", cpf_busca);
+        printf("Usuário com E-mail %s não encontrado.\n", email_busca);
     }
-}
+} // <-- CORRIGIDO: Chave de fechamento da função promovida_usuario adicionada.

@@ -40,7 +40,7 @@ int main() {
     // Carrega os dados salvos anteriormente (se existirem)
     carregar_dados_sistema(pessoas, &total_pessoas, atividades, &total_atividades, turmas, &total_turmas, notas, &total_notas);
 
-    // ADM Master "Gui123" (Login) - CORRIGIDO PARA 4 CAMPOS
+    // ADM Master "Gui123" (Login)
     if (total_pessoas == 0) {
         // Campos: nome, email(login), senha, role
         Pessoa adm_master = {"ADM Master (Inicial)", "Gui123@unip.com", "Gui123", ROLE_ADM};
@@ -61,7 +61,7 @@ int main() {
         if (strcmp(perfil_logado, "") == 0) { // Deslogado
             printf("\n--- Menu Principal ---\n");
             printf("1. Fazer Login\n");
-            printf("2. Novo Cadastro (Apenas Aluno)\n");
+            printf("2. Novo Cadastro \n");
             printf("0. Sair e Salvar\n");
             printf("Escolha uma opção: ");
 

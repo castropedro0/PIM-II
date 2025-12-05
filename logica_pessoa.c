@@ -1,10 +1,8 @@
-// Arquivo: logica_pessoas.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
-#include <conio.h> // Para _getch() no Windows, usado na senha oculta
+#include <conio.h>
 #include "logica_pessoas.h"
 
 // Garante o idioma em português
@@ -13,7 +11,7 @@ void __attribute__((constructor)) init_locale_pessoas() {
 }
 
 // ----------------------------------------------------
-// Função para ler a senha ocultando os caracteres com '*' (ADAPTADO PARA WINDOWS/MinGW)
+// Função para ler a senha ocultando os caracteres com '*'
 void ler_senha_oculta(char *senha, int max_len) {
     int i = 0;
     char ch;
@@ -42,7 +40,7 @@ void ler_senha_oculta(char *senha, int max_len) {
 }
 // ----------------------------------------------------
 
-// Busca por EMAIL (substitui o CPF)
+// Busca por EMAIL
 int buscar_pessoa(Pessoa *pessoas, int total, char *email_busca) {
     for (int i = 0; i < total; i++) {
         if (strcmp(pessoas[i].email, email_busca) == 0) {
@@ -52,7 +50,7 @@ int buscar_pessoa(Pessoa *pessoas, int total, char *email_busca) {
     return -1;
 }
 
-// Cadastro de Pessoa (simplificado)
+// Cadastro de Pessoa
 void inserir(Pessoa *pessoas, int *total, int permissao_total) {
     if (*total >= MAX_PESSOAS) {
         printf("\n!!! ERRO: LIMITE DE CADASTRO ATINGIDO !!!\n");
@@ -190,7 +188,7 @@ void excluir_pessoa(Pessoa *pessoas, int *total) {
     }
 }
 
-// Erro de 'expected declaration or statement at end of input' corrigido
+
 void promover_usuario(Pessoa *pessoas, int total) {
     char email_busca[TAM_EMAIL];
     int novo_perfil_escolha;
@@ -222,4 +220,4 @@ void promover_usuario(Pessoa *pessoas, int total) {
     } else {
         printf("Usuário com E-mail %s não encontrado.\n", email_busca);
     }
-} // <-- CORRIGIDO: Chave de fechamento da função promovida_usuario adicionada.
+}

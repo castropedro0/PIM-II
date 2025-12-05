@@ -1,5 +1,3 @@
-// Arquivo: logica_atividades.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -163,7 +161,7 @@ void excluir_nota(Nota *notas, int *total_notas, Pessoa *usuario_logado) {
     }
 }
 
-// --- FUNÇÕES DE ATIVIDADES E TURMAS (Corrigido o erro de Linker) ---
+
 
 void inserir_atividade(Atividade *atividades, int *total_atividades, char *professor_email) {
     if (*total_atividades >= MAX_ATIVIDADES) { printf("Limite de atividades atingido.\n"); return; }
@@ -208,7 +206,7 @@ void inserir_turma(Turma *turmas, int *total_turmas) {
     printf("Nome/Código da Turma: ");
     scanf(" %[^\n]", nova_turma.nome);
 
-    printf("E-mail do Professor Responsável (PENDENTE se vazio): ");
+    printf("Nome do Professor Responsável : ");
     scanf(" %s", email_professor_temp);
 
     if (strcmp(email_professor_temp, "PENDENTE") != 0 && strlen(email_professor_temp) > 0) {
@@ -235,14 +233,14 @@ void consultar_turma(Turma *turmas, int total_turmas, Pessoa *usuario_logado) {
     if (strcmp(usuario_logado->role, ROLE_ADM) == 0 || strcmp(usuario_logado->role, ROLE_PROFESSOR) == 0) {
         printf("Lista de Turmas (ADM/Professor):\n");
         for (int i = 0; i < total_turmas; i++) {
-            printf("[%d] Turma: %s | Prof. (E-mail): %s | Alunos: %d\n",
+            printf("[%d] Turma: %s | Prof. : %s | Alunos: %d\n",
                 i + 1, turmas[i].nome, turmas[i].professor_email, turmas[i].total_alunos);
         }
     } else {
         // Aluno: Apenas mostra a primeira turma como exemplo de sua turma
         Turma *minha_turma = &turmas[0];
         printf("Sua Turma de Interesse: %s\n", minha_turma->nome);
-        printf("- Professor Responsável (E-mail): %s\n", (strcmp(minha_turma->professor_email, "PENDENTE") == 0) ? "A definir" : minha_turma->professor_email);
+        printf("- Professor Responsável : %s\n", (strcmp(minha_turma->professor_email, "PENDENTE") == 0) ? "A definir" : minha_turma->professor_email);
     }
     printf("----------------------------------------------------\n");
 }
@@ -250,11 +248,11 @@ void consultar_turma(Turma *turmas, int total_turmas, Pessoa *usuario_logado) {
 void gerar_relatorio() {
     printf("\n[ SISTEMA de GESTÃO - RELATÓRIO ]\n");
     printf("----------------------------------------------------\n");
-    printf("Relatório básico gerado com sucesso! (ADM/Professor)\n");
+    printf("Relatório gerado com sucesso! (ADM/Professor)\n");
     printf("----------------------------------------------------\n");
 }
 
-// --- FUNÇÕES DE PERSISTÊNCIA (FORMATO TEXTO) ---
+// --- FUNÇÕES DE PERSISTÊNCIA  ---
 
 void salvar_dados_sistema(Pessoa *pessoas, int total_pessoas, Atividade *atividades, int total_atividades, Turma *turmas, int total_turmas, Nota *notas, int total_notas) {
     FILE *file = fopen(NOME_ARQUIVO, "w");
@@ -263,7 +261,7 @@ void salvar_dados_sistema(Pessoa *pessoas, int total_pessoas, Atividade *ativida
         return;
     }
 
-    // --- 1. Pessoas (4 campos: Nome|Email|Senha|Role) ---
+
     fprintf(file, "PESSOAS %d\n", total_pessoas);
     for (int i = 0; i < total_pessoas; i++) {
         // Formato: Nome|Email|Senha|Role
@@ -271,24 +269,24 @@ void salvar_dados_sistema(Pessoa *pessoas, int total_pessoas, Atividade *ativida
                 pessoas[i].nome, pessoas[i].email, pessoas[i].senha, pessoas[i].role);
     }
 
-    // --- 2. Atividades (Chave: Professor_Email) ---
+
     fprintf(file, "ATIVIDADES %d\n", total_atividades);
     for (int i = 0; i < total_atividades; i++) {
-        // Formato: Titulo|Descricao|Professor_Email|Data_Entrega
+
         fprintf(file, "%s|%s|%s|%s\n",
                 atividades[i].titulo, atividades[i].descricao, atividades[i].professor_email,
                 atividades[i].data_entrega);
     }
 
-    // --- 3. Turmas (Chave: Professor_Email) ---
+
     fprintf(file, "TURMAS %d\n", total_turmas);
     for (int i = 0; i < total_turmas; i++) {
-        // Formato: Nome|Professor_Email|Total_Alunos
+
         fprintf(file, "%s|%s|%d\n",
                 turmas[i].nome, turmas[i].professor_email, turmas[i].total_alunos);
     }
 
-    // --- 4. Notas (Chave: Aluno_Email) ---
+
     fprintf(file, "NOTAS %d\n", total_notas);
     for (int i = 0; i < total_notas; i++) {
         // Formato: Aluno_Email|Atividade_Titulo|Valor
@@ -311,7 +309,7 @@ void carregar_dados_sistema(Pessoa *pessoas, int *total_pessoas, Atividade *ativ
     char header[20];
     int count;
 
-    // 1. Pessoas (Novo formato com 4 campos: Nome|Email|Senha|Role)
+
     if (fscanf(file, "%s %d\n", header, &count) == 2 && strcmp(header, "PESSOAS") == 0) {
         *total_pessoas = 0;
         for (int i = 0; i < count && i < MAX_PESSOAS; i++) {

@@ -1,12 +1,10 @@
-// Arquivo: logica_pessoas.h
-
 #ifndef LOGICA_PESSOAS_H
 #define LOGICA_PESSOAS_H
 
 // Constantes
 #define MAX_PESSOAS 100
 #define TAM_NOME 50
-#define TAM_EMAIL 50 // Novo campo para login
+#define TAM_EMAIL 50
 #define TAM_SENHA 20
 #define TAM_ROLE 15
 
@@ -15,13 +13,13 @@
 #define ROLE_PROFESSOR "PROFESSOR"
 #define ROLE_ALUNO "ALUNO"
 
-// Estrutura principal para armazenar dados de uma Pessoa - SIMPLIFICADA
+// Estrutura principal para armazenar dados de uma Pessoa
 typedef struct {
     char nome[TAM_NOME];
-    char email[TAM_EMAIL]; // Novo identificador de login (Substitui o CPF)
+    char email[TAM_EMAIL];
     char senha[TAM_SENHA];
     char role[TAM_ROLE]; // Perfil: ADM, PROFESSOR ou ALUNO
-} Pessoa; // <-- CORRIGIDO: Ponto e vírgula adicionado!
+} Pessoa;
 
 // --- Protótipos das Funções de Gestão de Pessoas ---
 int buscar_pessoa(Pessoa *pessoas, int total, char *email_busca); // Busca por EMAIL

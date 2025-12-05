@@ -1,9 +1,7 @@
-// Arquivo: logica_atividades.h
-
 #ifndef LOGICA_ATIVIDADES_H
 #define LOGICA_ATIVIDADES_H
 
-#include "logica_pessoas.h" // Necessário para struct Pessoa e constantes
+#include "logica_pessoas.h"
 
 #define MAX_ATIVIDADES 100
 #define MAX_TURMAS 10
